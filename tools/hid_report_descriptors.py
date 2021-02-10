@@ -25,6 +25,7 @@ HID_DEVICE_DATA = {
     "CONSUMER" : DeviceData(report_length=2, out_report_length=0, usage_page=0x0C, usage=0x01),    # Consumer, Consumer Control
     "SYS_CONTROL" : DeviceData(report_length=1, out_report_length=0, usage_page=0x01, usage=0x80), # Generic Desktop, Sys Control
     "GAMEPAD" : DeviceData(report_length=6, out_report_length=0, usage_page=0x01, usage=0x05),     # Generic Desktop, Game Pad
+    "BUTTONBOX" : DeviceData(report_length=6, out_report_length=0, usage_page=0x01, usage=0x05),     # Generic Desktop, Game Pad
     "DIGITIZER" : DeviceData(report_length=5, out_report_length=0, usage_page=0x0D, usage=0x02),   # Digitizers, Pen
     "XAC_COMPATIBLE_GAMEPAD" : DeviceData(report_length=3, out_report_length=0, usage_page=0x01, usage=0x05), # Generic Desktop, Game Pad
     "RAW" : DeviceData(report_length=64, out_report_length=0, usage_page=0xFFAF, usage=0xAF),      # Vendor 0xFFAF "Adafruit", 0xAF
@@ -189,6 +190,28 @@ def gamepad_hid_descriptor(report_id):
              0xC0,              # End Collection
             )))
 
+def buttonbox_hid_descriptor(report_id):
+    data = HID_DEVICE_DATA["BUTTONBOX"]
+    return hid.ReportDescriptor(
+        description="BUTTONBOX",
+        report_descriptor=bytes(
+            # Gamepad with 16 buttons and two joysticks
+            (0x05, data.usage_page, # Usage Page (Generic Desktop Ctrls)
+             0x09, data.usage,  # Usage (Game Pad)
+             0xA1, 0x01,        # Collection (Application)
+            ) +
+            ((0x85, report_id) if report_id != 0 else ()) +
+            (0x05, 0x09,        #   Usage Page (Button)
+             0x19, 0x01,        #   Usage Minimum (Button 1)
+             0x29, 0x20,        #   Usage Maximum (Button 16)
+             0x15, 0x00,        #   Logical Minimum (0)
+             0x25, 0x01,        #   Logical Maximum (1)
+             0x75, 0x01,        #   Report Size (1)
+             0x95, 0x20,        #   Report Count (16)
+             0x81, 0x02,        #   Input (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position)
+             0xC0,              # End Collection
+            )))
+
 def digitizer_hid_descriptor(report_id):
     data = HID_DEVICE_DATA["DIGITIZER"]
     return hid.ReportDescriptor(
@@ -289,6 +312,7 @@ REPORT_DESCRIPTOR_FUNCTIONS = {
     "CONSUMER" : consumer_hid_descriptor,
     "SYS_CONTROL" : sys_control_hid_descriptor,
     "GAMEPAD" : gamepad_hid_descriptor,
+    "BUTTONBOX" : buttonbox_hid_descriptor,
     "DIGITIZER" : digitizer_hid_descriptor,
     "XAC_COMPATIBLE_GAMEPAD" : xac_compatible_gamepad_hid_descriptor,
     "RAW" : raw_hid_descriptor,
